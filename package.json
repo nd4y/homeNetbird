@@ -1,0 +1,12 @@
+{
+  "name": "homenetbird",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent Windows tray indicator and CLI wrapper for a secondary NetBird daemon",
+  "scripts": {
+    "build:icons": "node Build-HomeIcons.cjs"
+  },
+  "devDependencies": {
+    "sharp": "0.35.5"
+  }
+}

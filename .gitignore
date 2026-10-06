@@ -1,0 +1,5 @@
+node_modules/
+*.log
+tray-status.json
+*.pre-aurora
+home.config.json
