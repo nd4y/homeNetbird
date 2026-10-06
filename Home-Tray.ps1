@@ -31,6 +31,7 @@ $item = $menu.Items.Add('Connect Home'); $item.Add_Click({Open-HomeWindow up})
 $item = $menu.Items.Add('Disconnect Home'); $item.Add_Click({Open-HomeWindow down})
 $item = $menu.Items.Add('Detailed status'); $item.Add_Click({Open-HomeWindow status})
 $item = $menu.Items.Add('Routes'); $item.Add_Click({Open-HomeWindow routes})
+$item = $menu.Items.Add('Choose Home routes'); $item.Add_Click({Start-Process powershell.exe -ArgumentList @('-NoProfile','-STA','-ExecutionPolicy','Bypass','-File',('"'+(Join-Path $PSScriptRoot 'Home-Routes.ps1')+'"')) -WindowStyle Hidden})
 $item = $menu.Items.Add('Refresh'); $item.Add_Click({$script:nextProbe = [DateTime]::MinValue})
 $menu.Items.Add('-') | Out-Null
 $item = $menu.Items.Add('Exit indicator'); $item.Add_Click({[Windows.Forms.Application]::ExitThread()})

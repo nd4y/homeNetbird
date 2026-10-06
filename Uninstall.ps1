@@ -1,4 +1,9 @@
+param([switch]$RemoveDaemon)
 $ErrorActionPreference = 'Stop'
+if($RemoveDaemon){
+    $process=Start-Process powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+(Join-Path $PSScriptRoot 'Remove-Service.ps1')+'"')) -Verb RunAs -WindowStyle Hidden -Wait -PassThru
+    if($process.ExitCode -ne 0){throw 'Daemon removal failed; tray installation retained.'}
+}
 $directory = [IO.Path]::GetFullPath($PSScriptRoot)
 $userPath = [Environment]::GetEnvironmentVariable('Path','User')
 $remaining = @($userPath -split ';' | Where-Object {$_ -and $_.TrimEnd('\') -ne $directory.TrimEnd('\')})

@@ -1,5 +1,6 @@
 @echo off
 setlocal
+if not defined NETBIRD_HOME_BINARY if exist "%ProgramFiles%\homeNetbird\netbird-home.exe" set "NETBIRD_HOME_BINARY=%ProgramFiles%\homeNetbird\netbird-home.exe"
 if not defined NETBIRD_HOME_BINARY set "NETBIRD_HOME_BINARY=%ProgramFiles%\Netbird\netbird.exe"
 if not defined NETBIRD_HOME_DAEMON_ADDR set "NETBIRD_HOME_DAEMON_ADDR=tcp://127.0.0.1:41732"
 if not defined NETBIRD_HOME_CACHE set "NETBIRD_HOME_CACHE=%LOCALAPPDATA%\NetBirdHomeCLI"

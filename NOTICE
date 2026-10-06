@@ -7,3 +7,11 @@ Copyright (c) 2022 NetBird GmbH & AUTHORS.
 The original BSD 3-Clause license is reproduced in NETBIRD-LICENSE.
 The Aurora color treatment and generated icon variants are modifications.
 NetBird names and marks belong to their respective owners; no endorsement is implied.
+
+The bundled secondary daemon is built from the NetBird v0.71.4 client with
+isolated Windows interface GUID, firewall/NRPT namespaces and split-only DNS.
+Its source changes and pinned-source build are provided by Patch-NetBird.ps1
+and Build.ps1. Upstream client license: NETBIRD-LICENSE. Dependency notices:
+licenses/dependencies. Unmodified signed Wintun is distributed with software
+using its documented API; its license is licenses/WINTUN-LICENSE.txt.
+The optional primary NetBird MSI is an unmodified official upstream release.

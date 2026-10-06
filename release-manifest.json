@@ -1,0 +1,22 @@
+{
+  "version": "1.1.0",
+  "upstream": "0.71.4",
+  "architecture": "windows-amd64",
+  "files": [
+    {
+      "name": "netbird-home.exe",
+      "sha256": "547228072293256daaf2a5bd88f17d9c9948b4b6f7ec7eb426ad9e25de2bdaef",
+      "bytes": 34665984
+    },
+    {
+      "name": "netbird-primary.msi",
+      "sha256": "85dc1471af237f58abdc556d29e4a95dbc889dbfbaaf2b52db1ff5ea48fff406",
+      "bytes": 37351424
+    },
+    {
+      "name": "wintun.dll",
+      "sha256": "e5da8447dc2c320edc0fc52fa01885c103de8c118481f683643cacc3220dafce",
+      "bytes": 427552
+    }
+  ]
+}

@@ -3,3 +3,6 @@ node_modules/
 tray-status.json
 *.pre-aurora
 home.config.json
+build/
+dist/
+bin/
