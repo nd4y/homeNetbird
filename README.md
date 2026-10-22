@@ -12,12 +12,12 @@ Keep the official NetBird GUI for your primary network and run Home alongside it
 
 ## Status colors
 
-| Icon | Meaning |
-|---|---|
-| Cyan / electric blue / violet | Connected, Management and Signal reachable |
-| Gold / coral | Connected, with a Management or Signal problem |
-| Muted blue / rose | Disconnected |
-| Slate | Starting, daemon unavailable, or status request failed |
+| Icon                          | Meaning                                                |
+| ----------------------------- | ------------------------------------------------------ |
+| Cyan / electric blue / violet | Connected, Management and Signal reachable             |
+| Gold / coral                  | Connected, with a Management or Signal problem         |
+| Muted blue / rose             | Disconnected                                           |
+| Slate                         | Starting, daemon unavailable, or status request failed |
 
 The icon preserves NetBird's bird silhouette with a new Aurora color treatment. ICO files contain 16, 20, 24, 32, 48 and 64 px frames. The preview above is the same artwork used by the indicator.
 
@@ -91,12 +91,12 @@ Before a first-argument `up`, a read-only preflight checks the primary and secon
 
 Both tray and CLI use these environment variables:
 
-| Variable | Default |
-|---|---|
-| `NETBIRD_HOME_BINARY` | Bundled `%ProgramFiles%\homeNetbird\netbird-home.exe`, falling back to official NetBird CLI |
-| `NETBIRD_HOME_DAEMON_ADDR` | `tcp://127.0.0.1:41732` |
-| `NETBIRD_PRIMARY_DAEMON_ADDR` | `tcp://127.0.0.1:41731` |
-| `NETBIRD_HOME_CACHE` | `%LOCALAPPDATA%\NetBirdHomeCLI` |
+| Variable                      | Default                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `NETBIRD_HOME_BINARY`         | Bundled `%ProgramFiles%\homeNetbird\netbird-home.exe`, falling back to official NetBird CLI |
+| `NETBIRD_HOME_DAEMON_ADDR`    | `tcp://127.0.0.1:41732`                                                                     |
+| `NETBIRD_PRIMARY_DAEMON_ADDR` | `tcp://127.0.0.1:41731`                                                                     |
+| `NETBIRD_HOME_CACHE`          | `%LOCALAPPDATA%\NetBirdHomeCLI`                                                             |
 
 Use local TCP daemon endpoints. Set user environment variables persistently if they must apply after sign-in, then restart the indicator. For a temporary session:
 
@@ -131,3 +131,7 @@ npm run build:icons
 ## License
 
 Project scripts: MIT. NetBird-derived client/artwork: upstream licenses in [NETBIRD-LICENSE](NETBIRD-LICENSE), the patched source release, and [NOTICE](NOTICE). Wintun's prebuilt license and dependency notices are in `licenses`. The primary NetBird installer is an unmodified upstream package. This is an independent community project with no NetBird endorsement.
+
+## Development standard
+
+This repository adopts version 0.4.0 of the shared development standard. Read the [English guide](docs/en/development-standard.md) or [Russian guide](docs/ru/development-standard.md). The local toolkit checks staged secrets, changed-file formatting and bilingual documentation before merge. Existing product CI remains in place. Adoption is in progress; product acceptance and legacy-document translation are recorded separately in .repo-policy.json.
