@@ -16,6 +16,8 @@ concurrency:
 jobs:
   build:
     name: Windows x64 package
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
     runs-on: windows-2022
     timeout-minutes: 45
     defaults:
@@ -72,9 +74,10 @@ jobs:
         run: .\tests\Test-Artifacts.ps1
 
       - name: Upload validated installers and source
+        id: upload
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: homeNetbird-windows-amd64-${{ github.run_number }}
+          name: homeNetbird-windows-amd64-${{ github.run_number }}-${{ github.run_attempt }}
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
@@ -92,6 +95,61 @@ jobs:
           ## homeNetbird Windows build
           Daemon, tray-command tests and packaged-installer checks passed.
           Download the artifact above for the EXE, runtime ZIP, corresponding source and SHA-256 checksums.
-          This workflow does not publish releases, connect to a real VPN or install the production service.
+          Successful main builds are published by the separate release job. No real VPN connection or production service is installed here.
           Browser sign-in, elevated installation and visible tray interaction still require a manual test.
           '@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+  release:
+    name: Publish latest release
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download the exact validated build artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          merge-multiple: true
+          path: payload
+
+      - name: Publish an immutable build release and mark it latest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          if [[ "$current_main" != "$GITHUB_SHA" ]]; then
+            echo 'A newer main commit exists; this build will not replace Latest.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          cd payload/dist
+          tr -d '\r' < SHA256SUMS.txt | sha256sum --check -
+          version="$(jq -r .version ../release-manifest.json)"
+          tag="build-$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
+          notes="$RUNNER_TEMP/homeNetbird-release.md"
+          cat > "$notes" <<EOF
+          Automated homeNetbird build from commit $GITHUB_SHA.
+
+          - Application version: $version
+          - CI: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          - Windows x64 installer, runtime ZIP, corresponding NetBird source and SHA-256 checksums are attached.
+
+          Automated checks cover fresh idle-daemon initialization, hidden tray commands and packaged-installer integrity. Full elevated installation, browser VPN sign-in and visible desktop behavior still require manual verification.
+          EOF
+          gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --draft --title "homeNetbird $version - build $GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT" \
+            --notes-file "$notes" \
+            homeNetbird-Setup.exe "homeNetbird-$version-windows-amd64.zip" \
+            homeNetbird-netbird-source-*.zip SHA256SUMS.txt ../release-manifest.json
+          current_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          if [[ "$current_main" != "$GITHUB_SHA" ]]; then
+            echo 'A newer main commit appeared during upload; retaining this release as a draft.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease=false --latest
+          echo "Published [$tag]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$tag)." >> "$GITHUB_STEP_SUMMARY"

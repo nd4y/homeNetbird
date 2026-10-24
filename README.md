@@ -6,7 +6,9 @@ A Windows installer for a second, independent NetBird connection, including the 
 
 Keep the official NetBird GUI for your primary network and run Home alongside it. Hover over the Aurora icon to see its IP and connected peer count, double-click for detailed status, or use the menu to connect, disconnect and choose Home routes.
 
-**[Download homeNetbird-Setup.exe](https://github.com/nd4y/homeNetbird/releases/download/v1.1.0/homeNetbird-Setup.exe)** · **[Release files and checksums](https://github.com/nd4y/homeNetbird/releases/tag/v1.1.0)**
+[![Download latest homeNetbird for Windows x64](assets/download-latest.svg)](https://github.com/nd4y/homeNetbird/releases/latest/download/homeNetbird-Setup.exe)
+
+[Latest release, ZIP and checksums](https://github.com/nd4y/homeNetbird/releases/latest)
 
 Скачай установщик, запусти его, нажми **Install & connect Home**, подтверди UAC и войди в свою домашнюю сеть через браузер. Основной GUI остаётся для рабочей сети. После входа выбери нужные маршруты в отдельном окне; пересечения с другими интерфейсами будут отмечены.
 
@@ -113,7 +115,7 @@ The tray polls `status --json` roughly every 10 seconds. Requests run hidden wit
 
 Connected status describes the daemon/control plane. It does not prove that every peer or service is reachable. DNS and routes remain the responsibility of the VPN configuration: Windows routes by destination IP, so identical IPs in two networks need explicit routing/address translation or separate network stacks. The indicator does not arbitrate conflicting DNS namespaces or routes.
 
-Live checks covered the existing concurrent setup, native CLI detail/JSON/exit codes, icon frames, a fresh disconnected bundled daemon generating independent keys, route parsing/overlap detection, tray file installation and refusal to overwrite an existing Home service. A clean-PC elevated installation, complete new-account browser sign-in, GUI interactions, and next-sign-in startup have not been exercised end to end. Version 1.1.0 is therefore published as a preview release. `Test-Package.ps1` checks package hashes, scripts, icon frames and fresh idle-daemon initialization without registering a service or connecting a VPN.
+Live checks covered the existing concurrent setup, native CLI detail/JSON/exit codes, icon frames, a fresh disconnected bundled daemon generating independent keys, route parsing/overlap detection, tray file installation and refusal to overwrite an existing Home service. A clean-PC elevated installation, complete new-account browser sign-in, GUI interactions, and next-sign-in startup have not been exercised end to end. Automated build releases are published after CI passes; the manual checks above remain unverified. `Test-Package.ps1` checks package hashes, scripts, icon frames and fresh idle-daemon initialization without registering a service or connecting a VPN.
 
 ## Uninstall
 
@@ -141,6 +143,8 @@ The Aurora tray uses the official Windows NetBird badge shapes: green check for 
 
 The [Windows build and tests workflow](https://github.com/nd4y/homeNetbird/actions/workflows/windows.yml) runs on pushes to `main`, pull requests and manual **Run workflow** requests. It uses a clean GitHub-hosted Windows Server 2022 runner, Go 1.26.4 and Node.js 24. No local build machine or VPN credentials are required.
 
-Each successful run produces an artifact containing the self-contained installer, runtime ZIP, corresponding patched NetBird source, release manifest and SHA-256 checksums. Open a completed run and download `homeNetbird-windows-amd64-<run number>` from **Artifacts**. Artifacts are retained for 14 days. Releases are not published automatically.
+Each successful run produces an artifact containing the self-contained installer, runtime ZIP, corresponding patched NetBird source, release manifest and SHA-256 checksums. Open a completed run and download `homeNetbird-windows-amd64-<run number>-<attempt>` from **Artifacts**. Artifacts are retained for 14 days. Successful `main` builds also publish a permanent GitHub release and update the Download latest button; pull requests never publish releases.
 
 Checks cover fresh disconnected-daemon initialization and key generation, script syntax, icon frames, hidden Connect/Disconnect behavior with a fake CLI, duplicate suppression, failure/timeout handling, runtime archive contents and embedded EXE payload integrity. Real VPN sign-in, full elevated installation and visible Windows notification behavior remain manual checks. Test private state is outside the packaged tree and is never uploaded.
+
+Release tags use `build-<run number>.<attempt>` so reruns do not overwrite existing releases. Each release records its exact source commit and CI run; application and upstream NetBird versions remain separate in the manifest. Superseded main commits do not replace Latest.

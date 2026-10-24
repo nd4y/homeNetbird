@@ -13,7 +13,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive=[IO.Compression.ZipFile]::OpenRead($zip)
 try {
     $entries=@($archive.Entries|ForEach-Object {$_.FullName.Replace([char]92,[char]47)})
-    foreach($file in @('Setup.cmd','Setup.ps1','bin/netbird-home.exe','bin/wintun.dll','bin/netbird-primary.msi','Home-Tray-Actions.ps1','Home-Action-Worker.ps1','icons/home-connecting.ico','icons/home-preview.png','licenses/WINTUN-LICENSE.txt')){
+    foreach($file in @('Setup.cmd','Setup.ps1','bin/netbird-home.exe','bin/wintun.dll','bin/netbird-primary.msi','Home-Tray-Actions.ps1','Home-Action-Worker.ps1','icons/home-connecting.ico','icons/home-preview.png','assets/download-latest.svg','licenses/WINTUN-LICENSE.txt')){
         if(('homeNetbird/'+$file) -notin $entries){throw ('Missing runtime asset: '+$file)}
     }
     $privateNames=@('default.json','client.log','tray-status.json','state.json')
