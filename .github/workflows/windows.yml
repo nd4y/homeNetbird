@@ -1,0 +1,97 @@
+name: Windows build and tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Windows x64 package
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: powershell
+    env:
+      GOTOOLCHAIN: local
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.4'
+          cache: true
+          cache-dependency-path: Build.ps1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install artwork dependencies
+        run: |
+          npm ci --ignore-scripts
+          if ($LASTEXITCODE -ne 0) { throw 'npm ci failed' }
+
+      - name: Generate tray status icons
+        run: |
+          npm run build:tray-icons
+          if ($LASTEXITCODE -ne 0) { throw 'Icon generation failed' }
+
+      - name: Build isolated daemon and fetch pinned upstream packages
+        run: .\Build.ps1
+
+      - name: Test fresh daemon, package hashes, syntax and icon frames
+        run: .\Test-Package.ps1
+
+      - name: Test hidden tray commands and notifications with a fake CLI
+        run: .\tests\Test-TrayActions.ps1
+
+      - name: Package Windows runtime and corresponding NetBird source
+        run: .\Package.ps1
+
+      - name: Compile self-contained installer
+        run: .\Build-Setup.ps1
+
+      - name: Verify final archives and embedded installer payload
+        run: .\tests\Test-Artifacts.ps1
+
+      - name: Upload validated installers and source
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: homeNetbird-windows-amd64-${{ github.run_number }}
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+          path: |
+            dist/homeNetbird-Setup.exe
+            dist/homeNetbird-*-windows-amd64.zip
+            dist/homeNetbird-netbird-source-*.zip
+            dist/SHA256SUMS.txt
+            release-manifest.json
+
+      - name: Build summary
+        if: success()
+        run: |
+          @'
+          ## homeNetbird Windows build
+          Daemon, tray-command tests and packaged-installer checks passed.
+          Download the artifact above for the EXE, runtime ZIP, corresponding source and SHA-256 checksums.
+          This workflow does not publish releases, connect to a real VPN or install the production service.
+          Browser sign-in, elevated installation and visible tray interaction still require a manual test.
+          '@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append

@@ -4,7 +4,8 @@
   "private": true,
   "description": "Independent Windows tray indicator and CLI wrapper for a secondary NetBird daemon",
   "scripts": {
-    "build:icons": "node Build-HomeIcons.cjs"
+    "build:icons": "node Build-HomeIcons.cjs",
+    "build:tray-icons": "node Build-TrayIcons.cjs"
   },
   "devDependencies": {
     "sharp": "0.35.5"

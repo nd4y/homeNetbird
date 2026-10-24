@@ -10,7 +10,7 @@ $Destination = [IO.Path]::GetFullPath($Destination)
 $source = [IO.Path]::GetFullPath($PSScriptRoot)
 if ($source.TrimEnd('\') -ne $Destination.TrimEnd('\')) {
     New-Item -ItemType Directory -Path $Destination -Force | Out-Null
-    foreach ($file in @('Home-Tray.ps1','Home-Tray-Action.ps1','Home-Settings.ps1','Check-HomeIdentity.ps1','Connect-Home.ps1','Home-Routes.ps1','Update-HomeDNS.ps1','Remove-Service.ps1','homenetbird.cmd','Install-Tray.ps1','Uninstall.ps1','README.md','LICENSE','NETBIRD-LICENSE','NOTICE')) {
+    foreach ($file in @('Home-Tray.ps1','Home-Tray-Action.ps1','Home-Tray-Actions.ps1','Home-Action-Worker.ps1','Home-Settings.ps1','Check-HomeIdentity.ps1','Connect-Home.ps1','Home-Routes.ps1','Update-HomeDNS.ps1','Remove-Service.ps1','homenetbird.cmd','Install-Tray.ps1','Uninstall.ps1','README.md','LICENSE','NETBIRD-LICENSE','NOTICE')) {
         Copy-Item -LiteralPath (Join-Path $source $file) -Destination $Destination -Force
     }
     Copy-Item -LiteralPath (Join-Path $source 'icons') -Destination $Destination -Recurse -Force

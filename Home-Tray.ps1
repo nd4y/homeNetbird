@@ -1,3 +1,4 @@
+param([ValidateSet('','up','down')][string]$InitialAction='')
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 . (Join-Path $PSScriptRoot 'Home-Settings.ps1')
@@ -15,8 +16,9 @@ function New-HomeIcon([string]$State) {
     $path = Join-Path $PSScriptRoot ('icons\home-'+$State+'.ico')
     return [Drawing.Icon]::new($path,[Windows.Forms.SystemInformation]::SmallIconSize)
 }
-$icons = @{Connected=(New-HomeIcon connected); Degraded=(New-HomeIcon degraded); Disconnected=(New-HomeIcon disconnected); Unavailable=(New-HomeIcon unavailable); Starting=(New-HomeIcon unavailable)}
+$icons = @{Connected=(New-HomeIcon connected); Degraded=(New-HomeIcon degraded); Disconnected=(New-HomeIcon disconnected); Unavailable=(New-HomeIcon unavailable); Starting=(New-HomeIcon connecting); Connecting=(New-HomeIcon connecting)}
 $tray = New-Object Windows.Forms.NotifyIcon
+. (Join-Path $PSScriptRoot 'Home-Tray-Actions.ps1')
 $tray.Icon = $icons.Starting
 $tray.Text = 'Home NetBird: checking...'
 $menu = New-Object Windows.Forms.ContextMenuStrip
@@ -27,8 +29,8 @@ function Open-HomeWindow([string]$Mode) {
     Start-Process powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"'+(Join-Path $PSScriptRoot 'Home-Tray-Action.ps1')+'"'),'-Mode',$Mode) -WindowStyle Normal
     $script:nextProbe = [DateTime]::MinValue
 }
-$item = $menu.Items.Add('Connect Home'); $item.Add_Click({Open-HomeWindow up})
-$item = $menu.Items.Add('Disconnect Home'); $item.Add_Click({Open-HomeWindow down})
+$connectItem = $menu.Items.Add('Connect Home'); $connectItem.Add_Click({Start-HomeAction up})
+$disconnectItem = $menu.Items.Add('Disconnect Home'); $disconnectItem.Add_Click({Start-HomeAction down})
 $item = $menu.Items.Add('Detailed status'); $item.Add_Click({Open-HomeWindow status})
 $item = $menu.Items.Add('Routes'); $item.Add_Click({Open-HomeWindow routes})
 $item = $menu.Items.Add('Choose Home routes'); $item.Add_Click({Start-Process powershell.exe -ArgumentList @('-NoProfile','-STA','-ExecutionPolicy','Bypass','-File',('"'+(Join-Path $PSScriptRoot 'Home-Routes.ps1')+'"')) -WindowStyle Hidden})
@@ -65,13 +67,15 @@ function Start-HomeProbe {
 $timer = New-Object Windows.Forms.Timer
 $timer.Interval = 500
 $timer.Add_Tick({
+    Update-HomeAction
     try {
         if ($null -ne $script:probe) {
             if ($script:probe.HasExited -and $script:stdout.IsCompleted -and $script:stderr.IsCompleted) {
                 if ($script:probe.ExitCode -ne 0) { Set-HomeState Unavailable 'Home NetBird: daemon unavailable' }
                 else {
                     $status = $script:stdout.Result | ConvertFrom-Json
-                    if ($status.daemonStatus -ne 'Connected') { Set-HomeState Disconnected 'Home NetBird: disconnected' }
+                    if ($null -ne $script:homeAction -or $status.daemonStatus -eq 'Connecting') { Set-HomeState Connecting 'Home NetBird: connecting...' }
+                    elseif ($status.daemonStatus -ne 'Connected') { Set-HomeState Disconnected 'Home NetBird: disconnected' }
                     elseif (-not $status.management.connected -or -not $status.signal.connected) { Set-HomeState Degraded 'Home NetBird: connection degraded' }
                     else { Set-HomeState Connected ("Home: {0} | peers {1}/{2}" -f $status.netbirdIp,$status.peers.connected,$status.peers.total) }
                 }
@@ -95,9 +99,11 @@ $timer.Add_Tick({
 try {
     $tray.Visible = $true
     $timer.Start()
+    if($InitialAction){Start-HomeAction $InitialAction}
     [Windows.Forms.Application]::Run()
 } finally {
     $timer.Stop(); $timer.Dispose()
+    Stop-HomeAction
     if ($null -ne $script:probe) {
         try { if (-not $script:probe.HasExited) { $script:probe.Kill() } } catch {}
         $script:probe.Dispose()

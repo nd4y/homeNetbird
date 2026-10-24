@@ -131,3 +131,16 @@ npm run build:icons
 ## License
 
 Project scripts: MIT. NetBird-derived client/artwork: upstream licenses in [NETBIRD-LICENSE](NETBIRD-LICENSE), the patched source release, and [NOTICE](NOTICE). Wintun's prebuilt license and dependency notices are in `licenses`. The primary NetBird installer is an unmodified upstream package. This is an independent community project with no NetBird endorsement.
+
+Connect and Disconnect in the tray run without a terminal. Windows notifications report progress, success or failure; commands run asynchronously, with duplicate clicks blocked until completion. Detailed status and route listing retain their interactive windows.
+
+### Official-style status badges
+The Aurora tray uses the official Windows NetBird badge shapes: green check for connected, three dots while connecting or processing a command, plain bird when disconnected, and a red cross for an error/unavailable service. Update-arrow assets are included but are not activated: this tray does not currently check Home release versions. Build-TrayIcons.cjs uses attributed upstream template masks and retains home-preview.png unchanged.
+
+## GitHub Actions builds
+
+The [Windows build and tests workflow](https://github.com/nd4y/homeNetbird/actions/workflows/windows.yml) runs on pushes to `main`, pull requests and manual **Run workflow** requests. It uses a clean GitHub-hosted Windows Server 2022 runner, Go 1.26.4 and Node.js 24. No local build machine or VPN credentials are required.
+
+Each successful run produces an artifact containing the self-contained installer, runtime ZIP, corresponding patched NetBird source, release manifest and SHA-256 checksums. Open a completed run and download `homeNetbird-windows-amd64-<run number>` from **Artifacts**. Artifacts are retained for 14 days. Releases are not published automatically.
+
+Checks cover fresh disconnected-daemon initialization and key generation, script syntax, icon frames, hidden Connect/Disconnect behavior with a fake CLI, duplicate suppression, failure/timeout handling, runtime archive contents and embedded EXE payload integrity. Real VPN sign-in, full elevated installation and visible Windows notification behavior remain manual checks. Test private state is outside the packaged tree and is never uploaded.
