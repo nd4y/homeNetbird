@@ -28,5 +28,6 @@ $signal=Join-Path $SourceDirectory 'shared\signal\client\grpc.go'
 Replace-Required $signal "type GrpcClient struct {" "type GrpcClient struct {`n homeRecovery homeSignalRecovery`n homeTLS bool"
 Replace-Required $signal 'realClient:            proto.NewSignalExchangeClient(conn),' "realClient:            proto.NewSignalExchangeClient(conn),`n homeTLS: tlsEnabled,"
 Replace-Required $signal "`tif err != nil {`n`t`tc.notifyDisconnected(err)`n`t`tlog.Warnf(`"health check returned: %s`", err)" "`tc.observeHomeSignalHealth(err)`n`tif err != nil {`n`t`tc.notifyDisconnected(err)`n`t`tlog.Warnf(`"health check returned: %s`", err)"
-Replace-Required $signal "`t`tcancel()`n`n`t`tif s, ok := status.FromError(err);" "`t`tcancel()`n`t`tc.observeHomeSignalHealth(err)`n`n`t`tif s, ok := status.FromError(err);"
+Replace-Required $signal "`t`tcancel()`n`n`t`tif s, ok := status.FromError(err);" "`t`tcancel()`n`t`tif err == nil { c.observeHomeSignalHealth(nil) }`n`n`t`tif s, ok := status.FromError(err);"
+Replace-Required $signal "`treturn err`n}`n`n// receive receives messages" "`tif err != nil { _ = c.IsHealthy() }`n`treturn err`n}`n`n// receive receives messages"
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'daemon\home_signal_recovery.go'),(Join-Path $PSScriptRoot 'daemon\home_signal_recovery_test.go') -Destination (Join-Path $SourceDirectory 'shared\signal\client') -Force
