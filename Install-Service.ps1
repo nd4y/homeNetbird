@@ -52,8 +52,10 @@ try {
     New-Service -Name $serviceName -DisplayName 'NetBird Home' -StartupType Automatic -BinaryPathName $image|Out-Null
     $createdService=$true
     $key='HKLM:\SYSTEM\CurrentControlSet\Services\'+$serviceName
-    New-ItemProperty -Path $key -Name Environment -PropertyType MultiString -Value @("NB_STATE_DIR=$state","NB_DUAL_EXTRA_DOMAINS=$ExtraDomains") -Force|Out-Null
+    New-ItemProperty -Path $key -Name Environment -PropertyType MultiString -Value @("NB_STATE_DIR=$state","NB_DUAL_EXTRA_DOMAINS=$ExtraDomains",'NB_HOME_SIGNAL_RECOVERY=true') -Force|Out-Null
     New-ItemProperty -Path $key -Name DelayedAutoStart -PropertyType DWord -Value 1 -Force|Out-Null
+    & sc.exe failure $serviceName reset= 3600 actions= restart/10000/restart/30000/restart/120000 | Out-Null
+    if($LASTEXITCODE -ne 0){throw 'Could not configure bounded Home service recovery'}
     Start-Service $serviceName
     $deadline=(Get-Date).AddSeconds(20)
     do {

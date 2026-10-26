@@ -19,7 +19,11 @@ try {
     try {
         & $GoBinary fmt ./client/internal/dns ./client/firewall/uspfilter | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'Go formatting failed' }
-        & $GoBinary build -trimpath -buildvcs=false -ldflags '-s -w -X github.com/netbirdio/netbird/version.version=0.71.4-home-dual -X github.com/netbirdio/netbird/client/iface/device.CustomWindowsGUIDString={5c9483a8-3dc8-4f03-bdce-1d1257513582}' -o (Join-Path $bin 'netbird-home.exe') ./client
+        & $GoBinary fmt ./shared/signal/client | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw 'Signal formatting failed' }
+        & $GoBinary test ./shared/signal/client -run '^TestHome' -count=1
+        if ($LASTEXITCODE -ne 0) { throw 'Home Signal recovery tests failed' }
+        & $GoBinary build -trimpath -buildvcs=false -ldflags '-s -w -X github.com/netbirdio/netbird/version.version=0.71.4-home-dual-r1 -X github.com/netbirdio/netbird/client/iface/device.CustomWindowsGUIDString={5c9483a8-3dc8-4f03-bdce-1d1257513582}' -o (Join-Path $bin 'netbird-home.exe') ./client
         if ($LASTEXITCODE -ne 0) { throw 'Daemon build failed' }
         $modules = @(& $GoBinary list -deps -f '{{if .Module}}{{.Module.Path}}|{{.Module.Version}}|{{.Module.Dir}}{{end}}' ./client | Where-Object {$_} | Sort-Object -Unique)
         if ($LASTEXITCODE -ne 0) { throw 'Could not enumerate dependency licenses' }

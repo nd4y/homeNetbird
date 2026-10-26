@@ -148,3 +148,9 @@ Each successful run produces an artifact containing the self-contained installer
 Checks cover fresh disconnected-daemon initialization and key generation, script syntax, icon frames, hidden Connect/Disconnect behavior with a fake CLI, duplicate suppression, failure/timeout handling, runtime archive contents and embedded EXE payload integrity. Real VPN sign-in, full elevated installation and visible Windows notification behavior remain manual checks. Test private state is outside the packaged tree and is never uploaded.
 
 Release tags use `build-<run number>.<attempt>` so reruns do not overwrite existing releases. Each release records its exact source commit and CI run; application and upstream NetBird versions remain separate in the manifest. Superseded main commits do not replace Latest.
+
+## Recovering a stuck Home Signal transport
+
+The Home daemon can distinguish a stuck local gRPC channel from a remote Signal outage. Recovery requires at least three recoverable RPC failures spanning 45 seconds, followed by a successful identical health RPC on a separate connection. If the new connection also fails, current peer sessions are preserved and the process is not restarted. Successful RPCs and intentional shutdown cancel the recovery decision.
+
+The Windows Home service enables this with `NB_HOME_SIGNAL_RECOVERY=true` and configured SCM failure actions. A confirmed stuck process exits with code 75; SCM starts only Home again. A protected timestamp file under `NB_STATE_DIR` limits this to three recoveries per hour, at least ten minutes apart. Fresh probes are limited to once every two minutes. No scheduled task or extra monitoring service is installed. The primary official client is unchanged.
